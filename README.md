@@ -7,7 +7,7 @@ i3-memory-switch 4
 Now you're on workspace 4 but you don't remember that you were on workspace 3 --
 you just want to go back to the workspace you were on previously:
 
-``
+```
 i3-memory-switch 4
 ```
 
