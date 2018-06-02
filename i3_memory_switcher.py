@@ -2,6 +2,7 @@
 import subprocess
 import json
 import sys
+import os
 
 
 def get_active_workspace_num():
@@ -44,8 +45,6 @@ def parse_spaces(s):
     if it ever gets more complicated than that, use a csv lib
     """
     o = dict()
-    print('here are the file contents')
-    print(' "{}" '.format(s))
     for line in s.split():
         k, v = line.strip().split(',')
         o[int(k)] = int(v)
@@ -55,6 +54,20 @@ def format_spaces(spaces):
     pairs = [str(k) + ',' + str(v) for k, v in spaces.items()]
     return '\n'.join(pairs)
 
+def get_space_file_path():
+    """
+    i would ultimately want this to be some kind of kv store that only lives
+    during the user's i3 session, but i don't know how to do that.
+
+    instead i'll try to make it a file that sits next to wherever the user has
+    installed the script.  i wasn't sure if that is better than putting it in a
+    fixed location on all computers or in the user's homedir
+    """
+    d = os.path.dirname(
+        os.path.abspath(__file__)
+    )
+    return os.path.join(d, 'space_file')
+
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
@@ -63,11 +76,10 @@ if __name__ == '__main__':
         sys.exit(1)
 
     workspace_num = int(sys.argv[1])
-    with open('space_file', 'a+') as sp:
+    space_file = get_space_file_path()
+    with open(space_file, 'a+') as sp:
         sp.seek(0)
         spaces = parse_spaces(sp.read())
-        print('old values')
-        print(spaces)
         # do switch stuff
         spaces = memory_switch(spaces, workspace_num)
         # save
@@ -75,5 +87,4 @@ if __name__ == '__main__':
         sp.seek(0)
         sp.truncate()
         o = format_spaces(spaces)
-        print('going to write "{}"'.format(o))
         sp.write(o)
