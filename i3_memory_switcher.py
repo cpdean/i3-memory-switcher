@@ -1,5 +1,7 @@
+#!/usr/bin/env python3
 import subprocess
 import json
+import sys
 
 
 def get_active_workspace_num():
@@ -11,7 +13,7 @@ def get_active_workspace_num():
 
 
 def switch_to_workspace(num):
-    cmd = '"workspace {}"'.format(num)
+    cmd = 'workspace {}'.format(num)
     results = subprocess.run(['i3-msg', '-t', 'command', cmd], stdout=subprocess.PIPE)
 
 def memory_switch(spaces, num):
@@ -20,13 +22,13 @@ def memory_switch(spaces, num):
         # you are doing the switchback
         next_space = spaces.get(num)
         if next_space:
-            switch_to_workspace(num)
+            switch_to_workspace(next_space)
     else:
         # you are doing a regular switch and should record things
 
         # this is going to mutate the dictionary, which i feel gross about
         # but it's probably overkill to remain immutable
-        spaces[current] = num
+        spaces[num] = current
         switch_to_workspace(num)
     return spaces
 
@@ -55,13 +57,19 @@ def format_spaces(spaces):
 
 
 if __name__ == '__main__':
+    if len(sys.argv) != 2:
+        prog_name = sys.argv[0]
+        print('usage: {} NUMBER'.format(prog_name))
+        sys.exit(1)
+
+    workspace_num = int(sys.argv[1])
     with open('space_file', 'a+') as sp:
         sp.seek(0)
         spaces = parse_spaces(sp.read())
         print('old values')
         print(spaces)
         # do switch stuff
-        spaces = {2: 3}
+        spaces = memory_switch(spaces, workspace_num)
         # save
         # i am probably doing something wrong with files. this feels ugly
         sp.seek(0)
